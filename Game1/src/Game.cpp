@@ -6,9 +6,9 @@ void Game::initVariables() {
 
     // Game Logic
     this->points = 0;
-    this->enemySpawnTimerMax = 1000.f;
+    this->enemySpawnTimerMax = 10.f;
     this->enemySpawnTimer = this->enemySpawnTimerMax;
-    this->maxEnemies = 5;
+    this->maxEnemies = 5;   // Enemy count
 }
 
 void Game::initWindow() {
@@ -17,7 +17,7 @@ void Game::initWindow() {
 
     this->window = new sf::RenderWindow(this->videoMode, "Game 1", sf::Style::Titlebar | sf::Style::Close);
 
-    //this->window->setFramerateLimit(60);
+    this->window->setFramerateLimit(144);
 }
 
 void Game::initEnemies() {
@@ -25,8 +25,8 @@ void Game::initEnemies() {
     this->enemy.setSize(sf::Vector2f(100.f, 100.f));
     this->enemy.setScale(sf::Vector2f(0.5f, 0.5f));
     this->enemy.setFillColor(sf::Color::Cyan);
-    this->enemy.setOutlineColor(sf::Color::Green);
-    this->enemy.setOutlineThickness(1.f);
+    // this->enemy.setOutlineColor(sf::Color::Green);
+    // this->enemy.setOutlineThickness(1.f);
 }
 
 // Constructors
@@ -56,11 +56,26 @@ void Game::spawnEnemy() {
     - moves the enemies down
     */
 
-    this->enemy.setPosition(
-        static_cast<float>(rand() % static_cast<int>(this->window->getSize().x - this->enemy.getSize().x)), 0.f);
+    this->enemy.setPosition(static_cast<float>(rand() % static_cast<int>(this->window->getSize().x - this->enemy.getSize().x)), 0.f);
 
-    this->enemy.setFillColor(sf::Color::Green);
+    /*
+    ! Add multiple enemies
+    - Green: 100px, 1 point, speed 0.8 and 60% chance to spawn
+    - blue: 75px, 3 points, speed 1.75 and 30% chance to spawn
+    - red: 50px, 5 points, speed 3 and 10% chance to spawn
+    */
+    float chance = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 
+    if (chance < 0.6f) {  // Green 60%
+        this->enemy.setFillColor(sf::Color::Green);
+        this->enemy.setSize(sf::Vector2f(100.f, 100.f));
+    } else if (chance < 0.9f) {  // Blue 30%
+        this->enemy.setFillColor(sf::Color::Blue);
+        this->enemy.setSize(sf::Vector2f(70.f, 70.f));
+    } else {
+        this->enemy.setFillColor(sf::Color::Red);
+        this->enemy.setSize(sf::Vector2f(55.f, 55.f));
+    }
     this->enemies.push_back(this->enemy);
 }
 
@@ -81,6 +96,7 @@ void Game::pollEvents() {
 
 void Game::updateMousePositions() {
     this->mousePosWindow = sf::Mouse::getPosition(*this->window);
+    this->mousePosView = this->window->mapPixelToCoords(this->mousePosWindow);
 }
 
 void Game::updateEnemies() {
@@ -97,11 +113,43 @@ void Game::updateEnemies() {
         this->enemySpawnTimer += 1.f;
     }
 
-    // Remove enmies at the edge of the screen (TODO)
-    
-    // Moves enemies
-    for (auto &e : this->enemies) {
-        e.move(0.f, 1.f);   // Move the enemies down
+
+    for (int i=0; i<this->enemies.size(); i++) {
+        bool deleted = false;
+
+        // Moves enemies down
+        this->enemies[i].move(0.f, 1.f);
+        if (enemies[i].getFillColor() == sf::Color::Green) {
+            this->enemies[i].move(0.f, .8f);
+        } else if (enemies[i].getFillColor() == sf::Color::Blue) {
+            this->enemies[i].move(0.f, 1.75f);
+        }else {
+            this->enemies[i].move(0.f, 3.f);
+        }
+
+        // Deletes an enemy if mouse key is pressed and then check the location
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+            if (this->enemies[i].getGlobalBounds().contains(mousePosView)) {
+                deleted = true;
+
+                // Gain points
+                if (enemies[i].getFillColor() == sf::Color::Green) {
+                    points += 1;
+                } else if (enemies[i].getFillColor() == sf::Color::Blue) {
+                    points += 3;
+                }else {
+                    points += 5;
+                }
+                std::cout << "Points" << points << "\n";
+            }
+        }
+
+        // If the enemy is past the bottom of the screen
+        if(this->enemies[i].getPosition().y > this->window->getSize().y) {
+            deleted = true;
+        }
+
+        if (deleted) this->enemies.erase(this->enemies.begin() + i);
     }
 }
 
