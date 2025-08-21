@@ -5,10 +5,13 @@ void Game::initVariables() {
     this->window = nullptr;
 
     // Game Logic
+    this->endGame = false;
     this->points = 0;
     this->enemySpawnTimerMax = 10.f;
     this->enemySpawnTimer = this->enemySpawnTimerMax;
     this->maxEnemies = 5;   // Enemy count
+    this->mouseHeld = false;
+    this->health = 100;
 }
 
 void Game::initWindow() {
@@ -17,7 +20,7 @@ void Game::initWindow() {
 
     this->window = new sf::RenderWindow(this->videoMode, "Game 1", sf::Style::Titlebar | sf::Style::Close);
 
-    this->window->setFramerateLimit(144);
+    this->window->setFramerateLimit(120);
 }
 
 void Game::initEnemies() {
@@ -44,6 +47,10 @@ Game::~Game() {
 // Accessors
 const bool Game::running() const{
     return this->window->isOpen();
+}
+
+const bool Game::getEndGame() const {
+    return this->endGame;
 }
 
 // Function
@@ -114,9 +121,7 @@ void Game::updateEnemies() {
     }
 
 
-    for (int i=0; i<this->enemies.size(); i++) {
-        bool deleted = false;
-
+    for (int i=0; i < this->enemies.size(); i++) {
         // Moves enemies down
         this->enemies[i].move(0.f, 1.f);
         if (enemies[i].getFillColor() == sf::Color::Green) {
@@ -126,40 +131,59 @@ void Game::updateEnemies() {
         }else {
             this->enemies[i].move(0.f, 3.f);
         }
-
-        // Deletes an enemy if mouse key is pressed and then check the location
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-            if (this->enemies[i].getGlobalBounds().contains(mousePosView)) {
-                deleted = true;
-
-                // Gain points
-                if (enemies[i].getFillColor() == sf::Color::Green) {
-                    points += 1;
-                } else if (enemies[i].getFillColor() == sf::Color::Blue) {
-                    points += 3;
-                }else {
-                    points += 5;
-                }
-                std::cout << "Points" << points << "\n";
-            }
-        }
-
         // If the enemy is past the bottom of the screen
         if(this->enemies[i].getPosition().y > this->window->getSize().y) {
-            deleted = true;
+            this->enemies.erase(this->enemies.begin() + i);
+            this->health--;
+            std::cout << "Health: " << this->health << "\n";
         }
+    }
 
-        if (deleted) this->enemies.erase(this->enemies.begin() + i);
+    // Deletes an enemy if mouse key is pressed and then check the location
+    if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+        
+
+        if (this->mouseHeld == false) {
+            this->mouseHeld = true;
+            bool deleted = false;
+        
+            for (size_t i=0; i < this->enemies.size() && deleted == false; i++) {
+                if (this->enemies[i].getGlobalBounds().contains(mousePosView)) {
+                    deleted = true;
+                    this->enemies.erase(this->enemies.begin() + i);
+
+                    // Gain points
+                    if (enemies[i].getFillColor() == sf::Color::Green) {
+                        points += 1;
+                    } else if (enemies[i].getFillColor() == sf::Color::Blue) {
+                        points += 3;
+                    }else {
+                        points += 5;
+                    }
+
+                    std::cout << "Points" << this->points << "\n";
+                }
+            }
+        }
+    } else {
+        this->mouseHeld = false;
     }
 }
+
 
 void Game::update()
 {
     this->pollEvents();
 
-    this->updateMousePositions();
+    if (this->endGame == false) {
+        this->updateMousePositions();
+        this->updateEnemies();
+    }
 
-    this->updateEnemies();
+    if (this->health <= 0) {
+        this->endGame = true;
+    }
+
 
 
     // Update mouce position 
