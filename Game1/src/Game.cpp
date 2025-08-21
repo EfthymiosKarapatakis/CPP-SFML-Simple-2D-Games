@@ -23,6 +23,17 @@ void Game::initWindow() {
     this->window->setFramerateLimit(120);
 }
 
+void Game::initFonts() {
+    this->font.loadFromFile("fonts/MozillaHeadline-VariableFont_wdth,wght.ttf");
+}
+
+void Game::initText() {
+    this->uiText.setFont(this->font); 
+    this->uiText.setCharacterSize(24);
+    this->uiText.setFillColor(sf::Color::White);
+    this->uiText.setString("NONE");
+}
+
 void Game::initEnemies() {
     this->enemy.setPosition(10.f, 10.f);
     this->enemy.setSize(sf::Vector2f(100.f, 100.f));
@@ -37,6 +48,8 @@ Game::Game() {
     this->initVariables();
     this->initWindow();
     this->initEnemies();
+    this->initFonts();
+    this->initText();
 }
 
 // Destructors
@@ -120,25 +133,6 @@ void Game::updateEnemies() {
         this->enemySpawnTimer += 1.f;
     }
 
-
-    for (int i=0; i < this->enemies.size(); i++) {
-        // Moves enemies down
-        this->enemies[i].move(0.f, 1.f);
-        if (enemies[i].getFillColor() == sf::Color::Green) {
-            this->enemies[i].move(0.f, .8f);
-        } else if (enemies[i].getFillColor() == sf::Color::Blue) {
-            this->enemies[i].move(0.f, 1.75f);
-        }else {
-            this->enemies[i].move(0.f, 3.f);
-        }
-        // If the enemy is past the bottom of the screen
-        if(this->enemies[i].getPosition().y > this->window->getSize().y) {
-            this->enemies.erase(this->enemies.begin() + i);
-            this->health--;
-            std::cout << "Health: " << this->health << "\n";
-        }
-    }
-
     // Deletes an enemy if mouse key is pressed and then check the location
     if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
         
@@ -161,12 +155,30 @@ void Game::updateEnemies() {
                         points += 5;
                     }
 
-                    std::cout << "Points" << this->points << "\n";
+                    //std::cout << "Points" << this->points << "\n";
                 }
             }
         }
     } else {
         this->mouseHeld = false;
+    }
+
+    for (int i=0; i < this->enemies.size(); i++) {
+        // Moves enemies down
+        this->enemies[i].move(0.f, 1.f);
+        if (enemies[i].getFillColor() == sf::Color::Green) {
+            this->enemies[i].move(0.f, .8f);
+        } else if (enemies[i].getFillColor() == sf::Color::Blue) {
+            this->enemies[i].move(0.f, 1.75f);
+        }else {
+            this->enemies[i].move(0.f, 3.f);
+        }
+        // If the enemy is past the bottom of the screen
+        if(this->enemies[i].getPosition().y > this->window->getSize().y) {
+            this->enemies.erase(this->enemies.begin() + i);
+            this->health--;
+            //std::cout << "Health: " << this->health << "\n";
+        }
     }
 }
 
@@ -178,14 +190,12 @@ void Game::update()
     if (this->endGame == false) {
         this->updateMousePositions();
         this->updateEnemies();
+        this->updateText();
     }
 
     if (this->health <= 0) {
         this->endGame = true;
     }
-
-
-
     // Update mouce position 
     
     // Relative to the screen
@@ -195,18 +205,30 @@ void Game::update()
     //std::cout << "Mouse pos: " << sf::Mouse::getPosition(*this->window).x << ", " << sf::Mouse::getPosition(*this->window).y << "\n";
 }
 
-void Game::renderEnemies() {
+void Game::renderText(sf::RenderTarget& target) {
+    target.draw(this->uiText);
+}
+
+void Game::renderEnemies(sf::RenderTarget& target) {
     for (auto &e : this->enemies) {
-        this->window->draw(e);
+        target.draw(e);
     }
 }
 
-void Game::render() {
+void Game::updateText() {
+    std::stringstream ss;
+    ss << "Points: " << this->points << "\nHealth: " << this->health <<"%";
+    this->uiText.setString(ss.str());
+}
+
+void Game::render()
+{
     // clear screen before you draw
     this->window->clear();
 
     // Draw Ubjects
-    this->renderEnemies();
+    this->renderEnemies(*this->window);
+    this->renderText(*this->window);
 
     //Display Objects
     this->window->display();
