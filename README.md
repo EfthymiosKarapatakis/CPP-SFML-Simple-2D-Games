@@ -64,4 +64,4 @@ game.exe
 ---
 
 ## 📸 Screenshots (Game 1)
-<img src="ScreenshotGame1.png" alt="App Screenshot" width="500">
+<img src="assets/ScreenshotGame1.png" alt="App Screenshot" width="500">
