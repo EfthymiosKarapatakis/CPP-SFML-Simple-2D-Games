@@ -10,12 +10,18 @@ class Player {
 private:
     sf::RectangleShape shape;
 
+    // Player speed
+    float movementSpeed;
+
     void initVariables();
     void initShape();
 public:
-    Player();
+    Player(float x = 0.f, float y = 0.f);
     virtual ~Player();
 
-    void update();
+    void updateInput();
+    void updateWindowBoundsCollisions(const sf::RenderTarget* target);
+
+    void update(const sf::RenderTarget* target);
     void render(sf::RenderTarget* target);
 };
