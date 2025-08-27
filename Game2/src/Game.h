@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <ctime>
+#include <vector>
 
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
@@ -10,6 +11,7 @@
 #include <SFML/Network.hpp>
 
 #include "Player.h"
+#include "SwagBall.h"
 
 class Game {
 private:
@@ -19,6 +21,11 @@ private:
     sf::Event evnt;
 
     Player player;
+
+    std::vector<Swagball> SwagBalls;
+    float spawnTimerMax;
+    float spawnTimer;
+    int maxSwagBalls;
 
     void initVariables();
     void initWindow();
@@ -35,6 +42,8 @@ public:
     // Functions
     const bool running() const;
     void pollEvents();
+
+    void spawnSwagBalls();
     void update();
     void render();
 };
