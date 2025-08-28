@@ -21,6 +21,11 @@ Swagball::~Swagball() {
 }
 
 // Functions
+const sf::CircleShape Swagball::getShape() const {
+    return this->shape;
+}
+
+
 void Swagball::update() {
 
 }
