@@ -44,6 +44,7 @@ public:
     void pollEvents();
 
     void spawnSwagBalls();
+    void updateCollisions();
     void update();
     void render();
 };
