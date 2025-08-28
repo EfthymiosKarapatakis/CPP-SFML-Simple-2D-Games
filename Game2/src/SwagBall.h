@@ -15,7 +15,9 @@ private:
 public: 
     Swagball(const sf::RenderWindow& window);
     virtual ~Swagball();
-
+    
+    const sf::CircleShape getShape() const;
+    
     //Functions
     void update();
     void render(sf::RenderTarget& target);
