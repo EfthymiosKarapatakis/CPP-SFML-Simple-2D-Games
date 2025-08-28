@@ -13,11 +13,17 @@ private:
     // Player speed
     float movementSpeed;
 
+    int hp;
+    int hp_max;
+    int points;
+    
     void initVariables();
     void initShape();
 public:
     Player(float x = 0.f, float y = 0.f);
     virtual ~Player();
+
+    const sf::RectangleShape& getShape() const;
 
     void updateInput();
     void updateWindowBoundsCollisions(const sf::RenderTarget* target);
