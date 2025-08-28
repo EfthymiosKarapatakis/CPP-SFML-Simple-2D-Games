@@ -1,7 +1,10 @@
 #include "Player.h"
 
 void Player::initVariables() {
-    this->movementSpeed = 10.f;
+    this->movementSpeed = 5.f;
+    this->hp_max = 100;
+    this->hp = hp_max;
+    this->points = 0;
 }
 
 void Player::initShape() {
@@ -19,6 +22,10 @@ Player::Player(float x, float y) {
 
 Player::~Player() {
 
+}
+
+const sf::RectangleShape & Player::getShape() const {
+    return this->shape;
 }
 
 // Keyboard input
