@@ -6,6 +6,7 @@ void Game::initVariables() {
     this->spawnTimerMax = 10.f;
     this->spawnTimer = this->spawnTimerMax;
     this->maxSwagBalls = 10;
+    this->points = 0;
 }
 
 void Game::initWindow() {
@@ -14,11 +15,26 @@ void Game::initWindow() {
     this->window->setFramerateLimit(60);
 }
 
+void Game::initFont() {
+    if (!this->font.loadFromFile("fonts/MozillaHeadline-VariableFont_wdth,wght.ttf")) {
+        std::cout << " ! ERRORR::GAME::INITFONTS::COULD NOT LOAD MozillaHeadline" << "\n";
+    }
+}
+
+void Game::initText() {
+    // Gui text init
+    this->guiText.setFont(this->font);
+    this->guiText.setFillColor(sf::Color::White);
+    this->guiText.setCharacterSize(24);
+    this->guiText.setString("test");
+}
+
 // Constructor
 Game::Game() {
     this->initVariables();
     this->initWindow();
-
+    this->initFont();
+    this->initText();
 }
 
 // Destructor
@@ -65,8 +81,20 @@ void Game::updateCollisions() {
     for (size_t i = 0; i<this->SwagBalls.size(); i++) {
         if(this->player.getShape().getGlobalBounds().intersects(this->SwagBalls[i].getShape().getGlobalBounds())) {
             this->SwagBalls.erase(this->SwagBalls.begin() + i);
+            this->points++;
         }
     }
+}
+
+void Game::updateGui() {
+    std::stringstream ss;
+
+    ss << "Points: " << this->points;
+    this->guiText.setString(ss.str());
+}
+
+void Game::renderGui(sf::RenderTarget* target) {
+    target->draw(this->guiText);
 }
 
 void Game::update()
@@ -76,17 +104,21 @@ void Game::update()
     this->spawnSwagBalls();
     this->player.update(this->window);
     this->updateCollisions();
+    this->updateGui();
 }
 
 void Game::render() {
     this->window->clear();
+
+    this->player.render(this->window);
 
     // Render stuff
     for (auto i : this->SwagBalls) {
         i.render(*this->window);
     }
 
-    this->player.render(this->window);
+    // Render gui
+    this->renderGui(this->window);
 
     this->window->display();
 }
