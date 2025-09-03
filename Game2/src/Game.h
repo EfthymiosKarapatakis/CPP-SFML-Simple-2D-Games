@@ -3,6 +3,7 @@
 #include <iostream>
 #include <ctime>
 #include <vector>
+#include <sstream>
 
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
@@ -22,6 +23,11 @@ private:
 
     Player player;
 
+    int points;
+
+    sf::Font font;
+    sf::Text guiText;
+
     std::vector<Swagball> SwagBalls;
     float spawnTimerMax;
     float spawnTimer;
@@ -29,6 +35,8 @@ private:
 
     void initVariables();
     void initWindow();
+    void initFont();
+    void initText();
 
 public:
     // Constuctor and destructor
@@ -45,6 +53,10 @@ public:
 
     void spawnSwagBalls();
     void updateCollisions();
+    void updateGui();
+    
+    void renderGui(sf::RenderTarget* target);
+
     void update();
     void render();
 };
