@@ -23,8 +23,28 @@ Player::~Player() {
 
 }
 
+// Accessors
 const sf::RectangleShape & Player::getShape() const {
     return this->shape;
+}
+
+const int &Player::getHp() const {
+    return this->hp;
+}
+
+const int &Player::getHpMax() const {
+    return this->hp_max;
+}
+
+// Functions
+void Player::takeDamage(const int damage) {
+    if (this->hp > 0) this->hp -= damage;
+    if (this->hp < 0) this->hp = 0;
+}
+
+void Player::getHealth(const int health) {
+    if (this->hp < this->hp_max) this->hp += health;
+    if (this->hp > this->hp_max) this->hp = this->hp_max;
 }
 
 // Keyboard input
