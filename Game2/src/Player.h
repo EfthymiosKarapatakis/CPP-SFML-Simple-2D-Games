@@ -1,32 +1,143 @@
-#pragma once
+#include "Game.h"
+#include "Player.h"
 
-#include <SFML/Graphics.hpp>
-#include <SFML/System.hpp>
-#include <SFML/Window.hpp>
-#include <SFML/Audio.hpp>
-#include <SFML/Network.hpp>
+void Game::initVariables() {
+    this->endGame = false;
+    this->spawnTimerMax = 10.f;
+    this->spawnTimer = this->spawnTimerMax;
+    this->maxSwagBalls = 10;
+    this->points = 0;
+}
 
-class Player {
-private:
-    sf::RectangleShape shape;
+void Game::initWindow() {
+    this->videomode = sf::VideoMode(800, 600);
+    this->window = new sf::RenderWindow(this->videomode, "Game 2", sf::Style::Close | sf::Style::Titlebar);
+    this->window->setFramerateLimit(60);
+}
 
-    // Player speed
-    float movementSpeed;
+void Game::initFont() {
+    if (!this->font.loadFromFile("fonts/MozillaHeadline-VariableFont_wdth,wght.ttf")) {
+        std::cout << " ! ERRORR::GAME::INITFONTS::COULD NOT LOAD MozillaHeadline" << "\n";
+    }
+}
 
-    int hp;
-    int hp_max;
-    
-    void initVariables();
-    void initShape();
-public:
-    Player(float x = 0.f, float y = 0.f);
-    virtual ~Player();
+void Game::initText() {
+    // Gui text init
+    this->guiText.setFont(this->font);
+    this->guiText.setFillColor(sf::Color::White);
+    this->guiText.setCharacterSize(24);
+    this->guiText.setString("test");
+}
 
-    const sf::RectangleShape& getShape() const;
+// Constructor
+Game::Game() {
+    this->initVariables();
+    this->initWindow();
+    this->initFont();
+    this->initText();
+}
 
-    void updateInput();
-    void updateWindowBoundsCollisions(const sf::RenderTarget* target);
+// Destructor
+Game::~Game() {
+    delete this->window;
+}
 
-    void update(const sf::RenderTarget* target);
-    void render(sf::RenderTarget* target);
-};
+
+// Functions
+const bool Game::running() const {
+    return this->window->isOpen();
+}
+
+void Game::pollEvents() {
+    while(this->window->pollEvent(this->evnt)) {
+        switch (this->evnt.type) {
+            case sf::Event::Closed:
+                this->window->close();
+                break;
+            case sf::Event::KeyPressed:
+            if (this->evnt.key.code == sf::Keyboard::Escape)
+                this->window->close();
+            break;
+        }
+    }
+}
+
+void Game::spawnSwagBalls() {
+    // Timer
+    if (this->spawnTimer < this->spawnTimerMax) {
+        this->spawnTimer += 1.f;
+    } else {
+        if (this->SwagBalls.size() < this->maxSwagBalls) {
+            this->SwagBalls.push_back(Swagball(*this->window, rand() % SwagBallTypes::NROFTYPES));
+
+            this->spawnTimer = 0.f;
+        }
+    }
+
+}
+
+void Game::updateCollisions() {
+    //Check the collition
+    for (size_t i = 0; i<this->SwagBalls.size(); i++) {
+        if(this->player.getShape().getGlobalBounds().intersects(this->SwagBalls[i].getShape().getGlobalBounds())) {
+            // 
+            switch (this->SwagBalls[i].getType())
+            {
+            case SwagBallTypes::DEFAULT:
+                // Add points
+                this->points++;
+                break;
+            case SwagBallTypes::DAMAGING:
+                this->player.takeDamage(10);
+                break;
+            case SwagBallTypes::HEALING:
+                this->player.getHealth(10);
+                break;
+            default:
+                break;
+            }
+
+            // Remove the ball
+            this->SwagBalls.erase(this->SwagBalls.begin() + i);
+        }
+    }
+}
+
+void Game::updateGui() {
+    std::stringstream ss;
+
+    ss << " - Points: " << this->points << "\n - Health: " << this->player.getHp() << "/" << this->player.getHpMax();
+    this->guiText.setString(ss.str());
+}
+
+void Game::renderGui(sf::RenderTarget* target) {
+    target->draw(this->guiText);
+}
+
+void Game::update()
+{
+    this->pollEvents();
+
+    this->spawnSwagBalls();
+    this->player.update(this->window);
+    this->updateCollisions();
+    this->updateGui();
+}
+
+void Game::render() {
+    this->window->clear();
+
+    this->player.render(this->window);
+
+    // Render stuff
+    for (auto i : this->SwagBalls) {
+        i.render(*this->window);
+    }
+
+    // Render gui
+    this->renderGui(this->window);
+
+    this->window->display();
+}
+
+
