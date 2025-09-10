@@ -8,7 +8,7 @@ int main() {
     Game game;
 
     // Game loop
-    while (game.running()) {
+    while (game.running() /*&& !game.getEndGame()*/) { // with this when hp<=0 the game will close with no end game text
         game.update();
         game.render();
     }
